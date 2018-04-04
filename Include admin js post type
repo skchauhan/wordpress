@@ -1,0 +1,12 @@
+function add_admin_scripts( $hook ) {
+
+    global $post;
+
+    if ( $hook == 'post-new.php' || $hook == 'post.php' ) {
+        if ( 'movies' === $post->post_type ) {
+            wp_enqueue_script(  'myscript',
+get_stylesheet_directory_uri().'/js/custom.js' );
+        }
+    }
+}
+add_action( 'admin_enqueue_scripts', 'add_admin_scripts', 10, 1 );
