@@ -1,0 +1,46 @@
+function my_add_meta_box(){
+    add_meta_box( 'testimonial-details', 'Testimonial Details',
+'my_meta_box_cb', 'movies', 'normal', 'default');
+}
+function my_meta_box_cb($post) {
+    $values = get_post_custom( $post->ID );
+    $client_name = isset( $values['client_name'] ) ? esc_attr(
+$values['client_name'][0] ) : "";
+    $company = isset( $values['company'] ) ? esc_attr(
+$values['company'][0] ) : "";
+    $address = isset( $values['address'] ) ? esc_attr(
+$values['address'][0] ) : "";
+    wp_nonce_field( 'movies_details_nonce_action', 'movies_details_nonce' );
+    $html = '';
+    $html .= '<label>Client Name</label>';
+    $html .= '<input type="text" name="client_name" id="client_name"
+style="margin-top:15px; margin-left:9px; margin-bottom:10px;"
+value="'. $client_name .'" /><br/>';
+    $html .= '<label>Company</label>';
+    $html .= '<input type="text" name="company" id="company"
+style="margin-left:25px; margin-bottom:15px;" value="'. $company .'"
+/>';
+    $html .= '<label>Address</label>';
+    $html .= '<input type="text" name="address" id="address"
+style="margin-left:25px; margin-bottom:15px;" value="'. $address .'"
+/>';
+    echo $html;
+}
+function my_save_meta_box($post_id) {
+    // Bail if we're doing an auto save
+    if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+    // if our nonce isn't there, or we can't verify it, bail
+    if( !isset( $_POST['movies_details_nonce'] ) || !wp_verify_nonce(
+$_POST['movies_details_nonce'], 'movies_details_nonce_action' ) )
+return;
+    // if our current user can't edit this post, bail
+    if( !current_user_can( 'edit_post' ) ) return;
+    if(isset( $_POST['client_name'] ) )
+    update_post_meta( $post_id, 'client_name', $_POST['client_name']);
+    if(isset( $_POST['company'] ) )
+    update_post_meta( $post_id, 'company', $_POST['company']);
+    if(isset( $_POST['address'] ) )
+    update_post_meta( $post_id, 'address', $_POST['address']);
+}
+add_action( 'add_meta_boxes', 'my_add_meta_box' );
+add_action( 'save_post', 'my_save_meta_box' );
