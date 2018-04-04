@@ -1,0 +1,26 @@
+function my_pre_get_posts($query) {
+
+    if( is_admin() )
+        return;
+
+    if( is_search() && $query->is_main_query() ) {
+        $query->set('post_type', 'movies');
+    }
+
+}
+
+add_action( 'pre_get_posts', 'my_pre_get_posts' );
+
+
+...................
+
+
+
+if( have_posts() ) :
+while ( have_posts() ) :
+the_post();
+the_title();
+the_content();
+echo "<hr>";
+endwhile;
+endif;
