@@ -1,0 +1,135 @@
+<?php
+/**
+ * Repeatable Custom Fields in a Metabox
+ * Author: Hariom
+ *
+ * From a bespoke system, so currently not modular - will fix soon
+ * Note that this particular metadata is saved as one multidimensional array (serialized)
+ */
+ 
+
+add_action('admin_init', 'hhs_add_meta_boxes', 1);
+function hhs_add_meta_boxes() {
+	add_meta_box( 'repeatable-fields', 'Repeatable Fields', 'hhs_repeatable_meta_box_display', 'page', 'normal', 'default');
+}
+
+function hhs_repeatable_meta_box_display() {
+	global $post;
+	$repeatable_fields = get_post_meta($post->ID, 'repeatable_fields', true);
+	
+	wp_nonce_field( 'hhs_repeatable_meta_box_nonce', 'hhs_repeatable_meta_box_nonce' );
+	?>
+	<script type="text/javascript">
+	jQuery(document).ready(function( $ ){
+		$( '#add-row' ).on('click', function() {
+			var row = $( '.empty-row.screen-reader-text' ).clone(true);
+			row.removeClass( 'empty-row screen-reader-text' );
+			row.insertBefore( '#repeatable-fieldset-one tbody>tr:last' );
+			return false;
+		});
+  	
+		$( '.remove-row' ).on('click', function() {
+			$(this).parents('tr').remove();
+			return false;
+		});
+	});
+	</script>
+  
+	<table id="repeatable-fieldset-one" width="100%">
+	<thead>
+		<tr>
+			<th width="20%">Icon</th>
+			<th width="30%">Title</th>
+			<th width="30%">Description</th>
+		</tr>
+	</thead>
+	<tbody>
+	<?php
+	
+	if ( $repeatable_fields ) :
+	
+	foreach ( $repeatable_fields as $field ) {
+	?>
+	<tr>
+		<td><input type="text" class="widefat" name="picon[]" value="<?php if($field['picon'] != '') echo esc_attr( $field['picon'] ); ?>" /></td>
+		
+		<td><input type="text" class="widefat" name="ptitle[]" value="<?php if ($field['ptitle'] != '') echo esc_attr( $field['ptitle'] ); else echo ''; ?>" /></td>
+		<td><input type="text" class="widefat" name="pdescription[]" value="<?php if ($field['pdescription'] != '') echo esc_attr( $field['pdescription'] ); else echo ''; ?>" /></td>
+	
+		<td><a class="button remove-row" href="#">Remove</a></td>
+	</tr>
+	<?php
+	}
+	else :
+	// show a blank one
+	?>
+	<tr>
+		<td><input type="text" class="widefat" name="picon[]" /></td>	
+	
+		<td><input type="text" class="widefat" name="ptitle[]" /></td>
+
+		<td><input type="text" class="widefat" name="pdescription[]" /></td>
+	
+		<td><a class="button remove-row" href="#">Remove</a></td>
+	</tr>
+	<?php endif; ?>
+	
+	<!-- empty hidden one for jQuery -->
+	<tr class="empty-row screen-reader-text">
+		<td><input type="text" class="widefat" name="picon[]" /></td>	
+		
+		<td><input type="text" class="widefat" name="ptitle[]" /></td>
+
+		<td><input type="text" class="widefat" name="pdescription[]" /></td>
+		  
+		<td><a class="button remove-row" href="#">Remove</a></td>
+	</tr>
+	</tbody>
+	</table>
+	
+	<p><a id="add-row" class="button" href="#">Add another</a></p>
+	<?php
+}
+add_action('save_post', 'hhs_repeatable_meta_box_save');
+function hhs_repeatable_meta_box_save($post_id) {
+	if ( ! isset( $_POST['hhs_repeatable_meta_box_nonce'] ) ||
+	! wp_verify_nonce( $_POST['hhs_repeatable_meta_box_nonce'], 'hhs_repeatable_meta_box_nonce' ) )
+		return;
+	
+	if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
+		return;
+	
+	if (!current_user_can('edit_post', $post_id))
+		return;
+
+	$post_type = get_post_type($post_id);
+   	$old = get_post_meta($post_id, 'repeatable_fields', true);
+	$new = array();
+	
+	
+	$picon = $_POST['picon'];
+	$ptitle = $_POST['ptitle'];
+	$pdescription = $_POST['pdescription'];
+	
+	$count = count( $picon );
+	
+	for ( $i = 0; $i < $count; $i++ ) {
+		if ( $picon[$i] != '' ) :
+			$new[$i]['picon'] =  stripslashes( strip_tags( $picon[$i] ) ) ;			
+		endif;
+		if ( $ptitle[$i] != '' ) :
+			$new[$i]['ptitle'] = stripslashes( strip_tags( $ptitle[$i] ) );			
+		endif;
+		if ( $pdescription[$i] != '' ) :
+			$new[$i]['pdescription'] = stripslashes( strip_tags( $pdescription[$i] ) );			
+		endif;
+	}
+	if ( !empty( $new ) && $new != $old )
+		update_post_meta( $post_id, 'repeatable_fields', $new );
+	elseif ( empty($new) && $old )
+		delete_post_meta( $post_id, 'repeatable_fields', $old );
+}
+?>
+
+repeatable-metaboxes.php
+Displaying repeatable-metaboxes.php.
