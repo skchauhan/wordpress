@@ -1,0 +1,30 @@
+add_action('wp_ajax_read_me_later', 'read_me_later');
+add_action('wp_ajax_nopriv_read_me_later', 'read_me_later');
+
+function read_me_later(){
+
+echo(json_encode(array("name"=>'sunil')));
+}
+
+
+..........................
+
+
+ jQuery(document).on('click', '.cls', function(e) {
+    alert();
+        // e.preventDefault();
+        // var rml_post_id = jQuery(this).data( 'id' );
+        jQuery.ajax({
+            url : 'http://localhost/wordpress/wp-admin/admin-ajax.php',
+            type : 'post',
+            data : {
+                action : 'read_me_later',
+                post_id : 'rml_post_id'
+            },
+            success : function( response ) {
+            console.log(response);
+                // jQuery('.rml_contents').html(response);
+            }
+        });
+        // jQuery(this).hide();
+    });
