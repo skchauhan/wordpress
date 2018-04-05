@@ -1,0 +1,19 @@
+function getNextPreviousUrl() {  
+    $prev_post = get_previous_post();
+    $next_url = ''; $next_title = '';  $prev_title = ''; $prev_url = '';
+    if($prev_post) {
+        $prev_title = strip_tags(str_replace('"', '', $prev_post->post_title));
+        $prev_title = !empty($prev_title) ? $prev_title : '';
+    	$prev_url = get_permalink($prev_post->ID) ;
+    	$prev_url = !empty($prev_url) ? $prev_url : '';
+    }
+    
+    $next_post = get_next_post();
+    if($next_post) {
+      	$next_title = strip_tags(str_replace('"', '', $next_post->post_title));
+      	$next_title = !empty($next_title) ? $next_title : '';
+        $next_url =  get_permalink($next_post->ID);
+        $next_url = !empty($next_url) ? $next_url : '';
+    }
+    return([$next_url, $next_title, $prev_title, $prev_url]);
+}
